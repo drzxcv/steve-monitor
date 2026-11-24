@@ -1,0 +1,10 @@
+# GPU workstation only. Modelling needs just `pip install -e ".[dev]"`.
+name: mcmon
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - openjdk=8
+  - pip
+  - pip:
+      - -e ".[dev,sim]"

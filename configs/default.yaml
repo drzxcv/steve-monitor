@@ -1,0 +1,31 @@
+# Shared settings. Change them in their own pull request.
+
+tasks:
+  logs:
+    prompt: "chop tree"
+    item_pattern: ".*_log$"        # oak_log, birch_log, ...
+    target: 4                      # complete when count >= target
+    init_commands: ["/give @s minecraft:wooden_axe"]   # a tool, not a target item
+  dirt:
+    prompt: "collect dirt"
+    item_pattern: "^dirt$"
+    target: 4                      # 16 was never reached in the pilot
+    init_commands: ["/give @s minecraft:wooden_shovel"]
+
+collection:
+  max_steps: 1200
+  spawn_biome: null                # null = unfiltered worlds
+  obs_size: 128
+  cond_scale: 6.0                  # STEVE-1 paper's value for text prompts
+  policy: "CraftJarvis/MineStudio_STEVE-1.official"
+
+splits:
+  n_seeds: 250
+  base_seed: 20261123
+  fractions: {train: 0.6, val: 0.2, test: 0.2}
+  file: configs/splits.json
+
+inputs:
+  history: 16                      # 1 = latest frame only
+  stride: 4                        # keep every stride-th step as a sample
+  frame_gap: 1                     # steps between frames inside a window

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcmon"
+version = "0.1.0"
+description = "Task-completion monitors for Minecraft: boosted trees vs. a temporal CNN on STEVE-1 gameplay."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pyyaml",
+    "scikit-learn",
+    "xgboost>=2.0",
+    "torch>=2.3.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+sim = ["minestudio==1.1.6", "torchvision"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
