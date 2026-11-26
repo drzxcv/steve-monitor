@@ -30,8 +30,8 @@ and `ERROR` lines from Minecraft (Narrator, Realms, OptiFine textures) are harml
 ## Pilot
 
 `scripts/pilot_sweep.py` compares prompts and starting tools on training worlds without
-saving frames. Change `prompt`, `init_commands` or `target` in `configs/default.yaml` only
-before the full collection starts.
+saving frames. The collected data uses the `prompt`, `init_commands` and `target` in
+`configs/default.yaml`.
 
 Results on the first 15 training worlds, random spawns, 1,200 steps, MineStudio 1.1.6.
 Final count per world:
@@ -47,5 +47,8 @@ Final count per world:
 
 Other settings tried on 5 to 10 worlds did no better: "chop a tree" and "break a log" with an
 axe, "get dirt" and "dig as far as possible" with a shovel, and forest spawns. No dirt trial
-reached the original target of 16. A trial takes 30 to 60 seconds, a raw file is about 30 MB
-and a feature file about 2 MB, so the full collection is roughly 6 hours and 15 GB.
+reached the original target of 16.
+
+The full collection (500 trials) took about 7 hours and 12 GB, plus 1 GB of features.
+Completed trials per split (train / val / test): logs 59/150, 22/50, 21/50; dirt 72/150,
+27/50, 21/50.

@@ -82,10 +82,11 @@ class Samples:
 
 
 def build_samples(trials: Iterable[Trial], task_names: Sequence[str], max_steps: int, history: int, stride: int = 1,
-                  frame_gap: int = 1) -> Samples:
+                  frame_gap: int = 1, running_totals: bool = False) -> Samples:
     """Turn trials into fixed-length windows.
 
-    Each step's channels are [features, action, task one-hot, elapsed fraction].
+    Each step's channels are [features, action, task one-hot, elapsed fraction],
+    plus the sum of past actions over max_steps when running_totals is set.
     The window for step t holds steps t, t-gap, ..., t-(history-1)*gap. Steps
     before the start of the trial repeat step 0, so no future data is ever used.
 
@@ -103,6 +104,8 @@ def build_samples(trials: Iterable[Trial], task_names: Sequence[str], max_steps:
         prev_actions[1:] = trial.actions[:-1]
         per_step = np.concatenate(
             [trial.features.astype(np.float32), prev_actions, onehot, elapsed], axis=1)
+        if running_totals:
+            per_step = np.concatenate([per_step, np.cumsum(prev_actions, axis=0) / max_steps], axis=1)
 
         t = np.arange(0, n, stride)
         offsets = np.arange(history - 1, -1, -1) * frame_gap

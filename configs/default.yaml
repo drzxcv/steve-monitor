@@ -28,4 +28,5 @@ splits:
 inputs:
   history: 16                      # 1 = latest frame only
   stride: 4                        # keep every stride-th step as a sample
-  frame_gap: 1                     # steps between frames inside a window
+  frame_gap: 32                    # steps between frames inside a window (16 x 32 = 480 steps)
+  running_totals: true             # add each action's count so far in the trial

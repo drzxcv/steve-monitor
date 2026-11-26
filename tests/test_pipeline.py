@@ -3,6 +3,7 @@ import pytest
 
 from mcmon.config import REPO_ROOT, load_config
 from mcmon.data import Trial, build_samples, load_trial, load_trials, save_trial
+from mcmon.hud import apply_hud_mode
 from mcmon.labels import count_item, labels_from_counts
 from mcmon.metrics import bootstrap_macro_f1, brier, choose_threshold, evaluate, prf
 from mcmon.models.cnn import CNNMonitor
@@ -75,8 +76,8 @@ def test_frame_gap_and_flat():
 def test_inputs_do_not_change_when_inventory_changes():
     a = _marker_trial()
     b = Trial(a.task, a.seed, a.target, a.features, a.actions, a.item_count[::-1].copy())
-    xa = build_samples([a], NAMES, 20, history=4).x
-    xb = build_samples([b], NAMES, 20, history=4).x
+    xa = build_samples([a], NAMES, 20, history=4, running_totals=True).x
+    xb = build_samples([b], NAMES, 20, history=4, running_totals=True).x
     np.testing.assert_array_equal(xa, xb)
 
 
@@ -121,3 +122,17 @@ def test_models_train_and_beat_chance(synthetic, build):
     threshold = 0.5 if isinstance(model, TimeRule) else choose_threshold(val.y, prob)
     always_yes = prf(val.y, np.ones_like(val.y))["f1"]
     assert evaluate(val.y, prob, val.task, threshold, NAMES)["macro_f1"] > always_yes - 0.05
+
+
+def test_running_totals_count_past_actions_only():
+    s = build_samples([_marker_trial()], NAMES, max_steps=20, history=1, stride=5, running_totals=True)
+    assert s.x.shape == (4, 1, 1 + 1 + 2 + 1 + 1)
+    assert s.x[1, 0, -1] == pytest.approx(sum(100 + i for i in range(5)) / 20)   # actions 0..4 at step 5
+
+
+def test_hud_mask_splits_the_frame():
+    frames = np.full((2, 128, 128, 3), 255, dtype=np.uint8)
+    masked, hud = apply_hud_mode(frames, "masked"), apply_hud_mode(frames, "hud_only")
+    assert (masked[:, 110:, :] == 0).all() and (masked[:, :30, 100:] == 0).all()
+    assert (masked[:, 50, 50] == 255).all()
+    assert ((masked > 0) ^ (hud > 0)).all()

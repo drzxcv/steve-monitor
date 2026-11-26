@@ -1,0 +1,20 @@
+run,model,data,no_image,history,frame_gap,running_totals,threshold,val_macro_f1,val_f1_logs,val_f1_dirt
+pilot_gap32_totals_cnn,cnn,data/features,False,16,32,True,0.05,0.5952,0.5208,0.6697
+pilot_gap32_totals_xgb,xgb,data/features,False,16,32,True,0.2,0.6777,0.6279,0.7275
+pilot_gap32_xgb,xgb,data/features,False,16,32,False,0.2,0.6228,0.5717,0.6739
+pilot_gap64_xgb,xgb,data/features,False,16,64,False,0.25,0.6315,0.5916,0.6715
+pilot_gap8_xgb,xgb,data/features,False,16,8,False,0.15,0.6232,0.5374,0.7089
+pilot_hudonly_cnn,cnn,,False,16,1,False,0.05,0.5924,0.5007,0.6842
+pilot_hudonly_xgb,xgb,,False,16,1,False,0.2,0.5695,0.4766,0.6625
+pilot_masked_cnn,cnn,,False,16,1,False,0.15,0.5328,0.3982,0.6675
+pilot_masked_xgb,xgb,,False,16,1,False,0.25,0.5872,0.4985,0.6759
+pilot_mineclip_cnn,cnn,data/features_mineclip,False,16,1,False,0.25,0.6173,0.5814,0.6532
+pilot_mineclip_xgb,xgb,data/features_mineclip,False,16,1,False,0.15,0.5869,0.5095,0.6642
+pilot_noimage_totals_xgb,xgb,data/features,True,16,1,True,0.2,0.6232,0.5706,0.6758
+pilot_noimage_xgb,xgb,data/features,True,16,1,False,0.3,0.5524,0.5017,0.603
+pilot_time,time,data/features,False,16,1,False,0.5,0.5358,0.4748,0.5968
+pilot_totals_xgb,xgb,data/features,False,16,1,True,0.1,0.6588,0.5523,0.7654
+pilot_unmasked_cnn,cnn,,False,16,1,False,0.15,0.5982,0.5157,0.6808
+pilot_unmasked_time,time,,False,16,1,False,0.5,0.5358,0.4748,0.5968
+pilot_unmasked_xgb,xgb,,False,16,1,False,0.3,0.6197,0.5495,0.6899
+leakage_check,pixel cnn,raw HUD strip,,1,,,0.5499999999999999,0.9685,0.9926,0.9445

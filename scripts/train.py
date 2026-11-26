@@ -1,7 +1,8 @@
 """Train one monitor and report metrics.
 
-    python scripts/train.py --model xgb --data data/features --name xgb_h16
+    python scripts/train.py --model xgb --data data/features --name xgb
     python scripts/train.py --model cnn --data data/features --name cnn_h1 --history 1
+    python scripts/train.py --model xgb --data data/features --name xgb_noimage --no-image
 
 Validation metrics are always reported. Test metrics are only computed with
 --eval-test, which is for the final selected configurations.
@@ -14,7 +15,7 @@ from pathlib import Path
 import numpy as np
 
 from mcmon.config import REPO_ROOT, load_config
-from mcmon.data import build_samples, load_trials
+from mcmon.data import Samples, build_samples, load_trials
 from mcmon.metrics import bootstrap_macro_f1, choose_threshold, evaluate
 from mcmon.models.cnn import CNNMonitor
 from mcmon.models.time_rule import TimeRule
@@ -26,9 +27,13 @@ parser.add_argument("--model", choices=["time", "xgb", "cnn"], required=True)
 parser.add_argument("--data", required=True, help="folder of feature trials")
 parser.add_argument("--name", required=True, help="results go to runs/<name>/")
 parser.add_argument("--history", type=int, default=None, help="override inputs.history")
+parser.add_argument("--frame-gap", type=int, default=None, help="override inputs.frame_gap")
+parser.add_argument("--running-totals", action=argparse.BooleanOptionalAction, default=None,
+                    help="override inputs.running_totals")
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--epochs", type=int, default=20)
 parser.add_argument("--params", default="{}", help="JSON of model settings, e.g. '{\"max_depth\": 4}'")
+parser.add_argument("--no-image", action="store_true", help="control: actions, task and time only")
 parser.add_argument("--eval-test", action="store_true")
 args = parser.parse_args()
 
@@ -37,14 +42,22 @@ splits = load_splits(REPO_ROOT / cfg["splits"]["file"])
 inputs = dict(cfg["inputs"])
 if args.history is not None:
     inputs["history"] = args.history
+if args.frame_gap is not None:
+    inputs["frame_gap"] = args.frame_gap
+if args.running_totals is not None:
+    inputs["running_totals"] = args.running_totals
 names, max_steps = cfg["task_names"], cfg["collection"]["max_steps"]
 
 
-def samples_for(split):
+def samples_for(split: str) -> Samples:
+    """Windows for one split, without the image features when --no-image is set."""
     trials = load_trials(args.data, splits[split])
     if not trials:
         raise SystemExit(f"no {split} trials found under {args.data}")
-    return build_samples(trials, names, max_steps, **inputs)
+    samples = build_samples(trials, names, max_steps, **inputs)
+    if args.no_image:
+        samples.x = samples.x[:, :, trials[0].features.shape[1]:]
+    return samples
 
 
 train, val = samples_for("train"), samples_for("val")
@@ -59,7 +72,8 @@ else:
 val_prob = model.predict_proba(val)
 threshold = 0.5 if args.model == "time" else choose_threshold(val.y, val_prob)
 result = {
-    "model": args.model, "seed": args.seed, "inputs": inputs, "params": params,
+    "model": args.model, "data": args.data, "no_image": args.no_image, "seed": args.seed,
+    "inputs": inputs, "params": params,
     "threshold": threshold, "n_train": len(train.y),
     "val": evaluate(val.y, val_prob, val.task, threshold, names),
 }
