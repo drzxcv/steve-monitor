@@ -12,7 +12,7 @@ args = parser.parse_args()
 cfg = load_config()["splits"]
 path = REPO_ROOT / cfg["file"]
 if Path(path).exists() and not args.force:
-    raise SystemExit(f"{path} already exists. Changing it invalidates collected data; use --force if you mean it.")
+    raise SystemExit(f"{path} already exists. Changing it invalidates collected data; pass --force to overwrite.")
 splits = make_splits(cfg["n_seeds"], cfg["base_seed"], cfg["fractions"])
 save_splits(splits, path)
 print({k: len(v) for k, v in splits.items()}, "->", path)

@@ -93,7 +93,11 @@ def build_samples(trials: Iterable[Trial], task_names: Sequence[str], max_steps:
     The action stored at step t was chosen after seeing step t, so the newest
     position in a window uses the action from step t-1 (zeros at t=0).
     """
-    xs, ys, seeds, tasks, steps = [], [], [], [], []
+    trials = list(trials)
+    offsets = np.arange(history - 1, -1, -1) * frame_gap
+    n_samples = sum(len(range(0, len(trial), stride)) for trial in trials)
+    x = None   # filled in place: a list of windows would need twice the memory
+    ys, seeds, tasks, steps, row = [], [], [], [], 0
     for trial in trials:
         n = len(trial)
         tid = task_names.index(trial.task)
@@ -108,14 +112,16 @@ def build_samples(trials: Iterable[Trial], task_names: Sequence[str], max_steps:
             per_step = np.concatenate([per_step, np.cumsum(prev_actions, axis=0) / max_steps], axis=1)
 
         t = np.arange(0, n, stride)
-        offsets = np.arange(history - 1, -1, -1) * frame_gap
         idx = np.clip(t[:, None] - offsets[None, :], 0, None)
-        xs.append(per_step[idx])
+        if x is None:
+            x = np.empty((n_samples, history, per_step.shape[1]), np.float32)
+        x[row:row + len(t)] = per_step[idx]
+        row += len(t)
         ys.append(trial.labels[t])
         seeds.append(np.full(len(t), trial.seed))
         tasks.append(np.full(len(t), tid))
         steps.append(t)
     return Samples(
-        x=np.concatenate(xs), y=np.concatenate(ys).astype(np.int8),
+        x=x, y=np.concatenate(ys).astype(np.int8),
         seed=np.concatenate(seeds), task=np.concatenate(tasks), step=np.concatenate(steps),
     )

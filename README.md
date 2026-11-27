@@ -7,7 +7,7 @@ A monitor looks at gameplay features and actions and predicts whether the task
 (collect 4 logs, or collect 4 dirt) is finished. Inventory counts give the labels and
 are never a model input, and the on-screen hotbar is masked out of every frame.
 
-## Start here
+## Quick start
 
 ```bash
 git clone https://github.com/drzxcv/steve-monitor.git && cd steve-monitor
@@ -17,8 +17,8 @@ pytest -q
 make demo                                              # fake data -> all three models -> metrics
 ```
 
-That is all you need for modelling work on any machine. Recording gameplay needs the GPU
-workstation: see [docs/SETUP.md](docs/SETUP.md).
+This covers the modelling code and runs on any machine. Recording gameplay needs a GPU
+workstation with the simulator: see [docs/SETUP.md](docs/SETUP.md).
 
 ## Pipeline
 
@@ -40,8 +40,8 @@ Each `.npz` is one trial (one task in one world). Row `t` of every array is the 
 | `item_count` | `[T]` int32 | Target items held at step `t`. Labels only. |
 | `task`, `seed`, `target` | scalars | Label is `item_count >= target` |
 
-`scripts/make_synthetic.py` writes fake feature files, so modelling work does not wait for
-collection.
+`scripts/make_synthetic.py` writes fake feature files in the same format, which the tests
+and `make demo` use.
 
 ## Layout
 
@@ -50,24 +50,29 @@ collection.
 | `configs/default.yaml` | Shared settings: tasks, prompts, targets, input window, split sizes |
 | `configs/splits.json` | The 250 world seeds and their train/val/test split. Frozen. |
 | `src/mcmon/` | Library: labels, data and windows, metrics, simulator, models |
-| `scripts/` | One entry point per pipeline step |
+| `scripts/` | One entry point per pipeline step, plus the search, checks and reports |
 | `tests/` | Leakage, split, metric and training checks |
 | `docs/SETUP.md` | Workstation setup and the collection pilot |
 | `results/` | Result tables and figures kept in git |
 
-## Rules that protect the results
+## Safeguards
 
-1. **Never edit `configs/splits.json`** after collection starts. A test checks it matches the config.
-2. **Inventory is for labels only.** Inputs are built only in `build_samples`, and a test checks they ignore inventory. `extract_features.py` blacks out the hotbar and item pop-ups, which show the inventory on screen.
-3. **Tune on validation.** `train.py` reports test metrics only with `--eval-test`; use it for final configurations only.
-4. **Data and run outputs stay out of git.** Share `data/features/` (about 1 GB) through a shared drive and keep raw data on the workstation. STEVE-1 samples its actions, so a re-run is not identical: back up the collected data.
+- **Fixed splits.** World seeds are assigned to train, validation and test before any data is
+  collected, and both trials from a world stay in the same split. A test checks that
+  `configs/splits.json` matches the config.
+- **No label leakage.** Inventory counts are used only for labels. Model inputs are built in
+  one place (`build_samples`), and a test checks they do not change when the inventory does.
+  `extract_features.py` blacks out the hotbar and item pop-ups, which show the inventory on
+  screen; `scripts/leakage_check.py` measures how much they would give away.
+- **Test data used once.** Configurations, early stopping and thresholds are chosen on
+  validation data. `train.py` computes test metrics only with `--eval-test`.
+- **Data outside git.** Recorded gameplay (12 GB), features (1 GB) and run outputs are not
+  tracked. STEVE-1 samples its actions, so a new collection would not reproduce the same trials.
 
-## Working together
-
-Work on short branches and review each other's pull requests. GitHub Actions runs the tests
-on every pull request. Put changes to `configs/default.yaml` in their own pull request.
+GitHub Actions runs the tests on every pull request.
 
 ## Results
 
-Pilot results on validation data are in [results/](results/README.md): the hotbar leakage
-check, the encoder comparison, and the effect of a longer input window.
+Tables and figures are in [results/](results/README.md): the test-set comparison of the two
+monitors and the time rule, the hyperparameter search, the encoder comparison, and the
+hotbar leakage check.

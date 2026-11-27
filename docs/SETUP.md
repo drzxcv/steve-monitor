@@ -19,7 +19,7 @@ Linux (or WSL) with an NVIDIA GPU.
 conda env create -f environment.yml      # Python 3.10, JDK 8, MineStudio 1.1.6, this package
 conda activate mcmon
 sudo apt install -y xvfb mesa-utils libegl1-mesa libgl1-mesa-dev libglu1-mesa-dev
-export MINESTUDIO_DIR=$HOME/MineStudio   # put in ~/.bashrc; the default /tmp is wiped on restart
+export MINESTUDIO_DIR=$HOME/MineStudio   # also in ~/.bashrc; the default location under /tmp is wiped on restart
 python scripts/smoke_test_env.py --task logs --steps 300
 ```
 

@@ -1,4 +1,4 @@
-# Shared settings. Change them in their own pull request.
+# Settings shared by collection, feature extraction and training.
 
 tasks:
   logs:

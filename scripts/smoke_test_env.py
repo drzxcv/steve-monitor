@@ -1,4 +1,4 @@
-"""Day-1 check on the GPU workstation: does the simulator run, does STEVE-1 act,
+"""Simulator check on the GPU workstation: does the simulator run, does STEVE-1 act,
 and do inventory counts come back every step?
 
     python scripts/smoke_test_env.py --task logs --steps 300

@@ -1,0 +1,25 @@
+# Hyperparameter search: six configurations per model, compared on validation only.
+# Each entry is passed to scripts/train.py; `params` are the model's settings.
+# A group name starts with its model: `cnn_last_step` trains a cnn.
+xgb:
+  - {name: default, params: {}}                                   # depth 6, lr 0.1, 300 trees
+  - {name: shallow, params: {max_depth: 4}}
+  - {name: deep, params: {max_depth: 8}}
+  - {name: slow, params: {learning_rate: 0.05, n_estimators: 600}}
+  - {name: regularised, params: {max_depth: 4, min_child_weight: 5, subsample: 0.7}}
+  - {name: few_columns, params: {colsample_bytree: 0.2}}
+cnn:
+  - {name: default, params: {}}                                   # 64 filters, kernel 3, dropout 0.1
+  - {name: wide, params: {hidden: 128}}
+  - {name: wide_dropout, params: {hidden: 128, dropout: 0.3}}
+  - {name: kernel5, params: {kernel: 5}}
+  - {name: low_lr, params: {lr: 0.0003}}
+  - {name: small_regularised, params: {hidden: 32, dropout: 0.3, weight_decay: 0.001}}
+# The same six with the original newest-step readout, kept for comparison.
+cnn_last_step:
+  - {name: default, params: {pool: false}}
+  - {name: wide, params: {pool: false, hidden: 128}}
+  - {name: wide_dropout, params: {pool: false, hidden: 128, dropout: 0.3}}
+  - {name: kernel5, params: {pool: false, kernel: 5}}
+  - {name: low_lr, params: {pool: false, lr: 0.0003}}
+  - {name: small_regularised, params: {pool: false, hidden: 32, dropout: 0.3, weight_decay: 0.001}}
